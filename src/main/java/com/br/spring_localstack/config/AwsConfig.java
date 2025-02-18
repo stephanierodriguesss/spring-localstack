@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
@@ -46,6 +47,19 @@ public class AwsConfig {
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
                 .endpointOverride(URI.create(endpointUrl))
+                .build();
+    }
+
+    @Bean
+    public SnsClient snsClient(SecretsManagerClient secretsManagerClient) throws Exception {
+        String accessKey = getAwsCredentials(secretsManagerClient, "accessKey");
+        String secretKey = getAwsCredentials(secretsManagerClient, "secretKey");
+
+        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
+        return SnsClient.builder()
+                .region(Region.of(region))
+                .endpointOverride(URI.create(endpointUrl))
+                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
                 .build();
     }
 
