@@ -22,7 +22,7 @@ public class SqsService {
     public void sendMessage(String message, String queue) {
         try {
             SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
-                    .queueUrl(queueUrl+queue)
+                    .queueUrl(queueUrl + queue)
                     .messageBody(message)
                     .build();
 
