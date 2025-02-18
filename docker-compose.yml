@@ -1,0 +1,20 @@
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    networks:
+      - localstack_network
+
+  springboot-app:
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - localstack_network
+
+networks:
+  localstack_network:
+    driver: bridge

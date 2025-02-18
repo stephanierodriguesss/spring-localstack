@@ -47,4 +47,20 @@ public class SnsService {
             return "Erro ao publicar mensagem: " + e.getMessage();
         }
     }
+
+    public String subscribeToTopic(String topicName, String endpointUrl, String protocol) {
+        try {
+            SubscribeRequest subscribeRequest = SubscribeRequest.builder()
+                    .protocol(protocol)
+                    .endpoint(endpointUrl)
+                    .topicArn(url+topicName)
+                    .build();
+
+            SubscribeResponse subscribeResponse = snsClient.subscribe(subscribeRequest);
+            return "Inscrição realizada com sucesso. Subscription ARN: " + subscribeResponse.subscriptionArn();
+        } catch (SnsException e) {
+            e.printStackTrace();
+            return "Erro ao se inscrever no tópico: " + e.getMessage();
+        }
+    }
 }
