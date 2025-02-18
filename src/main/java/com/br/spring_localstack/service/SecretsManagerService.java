@@ -1,6 +1,6 @@
 package com.br.spring_localstack.service;
 
-import com.br.spring_localstack.config.AwsConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
@@ -12,8 +12,9 @@ public class SecretsManagerService {
 
     private final SecretsManagerClient secretsManager;
 
-    public SecretsManagerService() {
-        this.secretsManager = AwsConfig.createSecretsManagerClient();
+    @Autowired
+    public SecretsManagerService(SecretsManagerClient secretsManager) {
+        this.secretsManager = secretsManager;
     }
 
     public String getSecret(String secretName) {

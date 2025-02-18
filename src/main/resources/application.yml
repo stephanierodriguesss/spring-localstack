@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: "localstack"
+  cloud:
+    aws:
+      credentials:
+        name: "MySecrets"
+      region:
+        static: us-east-1
+      endpoint:
+        url: "http://localhost:4566"
