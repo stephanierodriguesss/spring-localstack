@@ -41,8 +41,6 @@ public class SqsListenerService {
                     for (Message message : messages) {
                         processMessage(message);
                     }
-                } else {
-                    System.out.println("Nenhuma mensagem recebida.");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
