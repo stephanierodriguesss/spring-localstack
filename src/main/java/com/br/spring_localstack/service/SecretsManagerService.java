@@ -3,9 +3,7 @@ package com.br.spring_localstack.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
-import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
+import software.amazon.awssdk.services.secretsmanager.model.*;
 
 @Service
 public class SecretsManagerService {
@@ -29,6 +27,19 @@ public class SecretsManagerService {
         } catch (SecretsManagerException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public String createSecret(String secretName, String secretValue) {
+        try {
+            CreateSecretRequest createSecretRequest = CreateSecretRequest.builder()
+                    .name(secretName)
+                    .secretString(secretValue).build();
+
+            CreateSecretResponse result = secretsManager.createSecret(createSecretRequest);
+            return "Secret created successfully with ARN: " + result.arn();
+        } catch (InvalidRequestException e) {
+            return "Error creating secret: " + e.getMessage();
         }
     }
 }
