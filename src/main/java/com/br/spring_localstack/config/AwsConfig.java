@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
@@ -33,6 +34,15 @@ public class AwsConfig {
         return SecretsManagerClient.builder()
                 .region(Region.of(region))
                 .endpointOverride(URI.create(endpointUrl))
+                .build();
+    }
+
+    @Bean
+    public S3Client s3Client() {
+        return S3Client.builder()
+                .region(Region.of(region))
+                .endpointOverride(URI.create(endpointUrl))
+                .forcePathStyle(true)
                 .build();
     }
 
