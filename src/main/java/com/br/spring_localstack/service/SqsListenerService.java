@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 
@@ -42,6 +43,19 @@ public class SqsListenerService {
                         .thenApply(response -> {
                             for (Message message : response.messages()) {
                                 System.out.println("Received message: " + message.body());
+
+                                DeleteMessageRequest deleteRequest = DeleteMessageRequest.builder()
+                                        .queueUrl(queueUrl + queue)
+                                        .receiptHandle(message.receiptHandle())
+                                        .build();
+
+                                sqsAsyncClient.deleteMessage(deleteRequest)
+                                        .thenRun(() -> System.out.println("Deleted message: " + message.messageId()))
+                                        .exceptionally(throwable -> {
+                                            System.err.println("Failed to delete message: " + message.messageId());
+                                            throwable.printStackTrace();
+                                            return null;
+                                        });
                             }
                             return response;
                         })

@@ -2,6 +2,21 @@ spring:
   application:
     name: "localstack"
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    export:
+      cloudwatch:
+        enabled: true
+        namespace: MyAppMetrics
+        step: 10s
+  endpoint:
+    health:
+      show-details: always
+
 cloud:
   aws:
     credentials:
