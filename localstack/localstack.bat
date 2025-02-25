@@ -17,3 +17,7 @@ aws --endpoint http://localhost:4566 --profile localstack sqs receive-message --
 echo ### Criando Queue(Standard) no SNS do LocalStack...
 aws --endpoint http://localhost:4566 --profile localstack sns create-topic --name MyTopic
 aws --endpoint http://localhost:4566 --profile localstack sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:MyQueue --protocol sqs --notification-endpoint arn:aws:sqs:us-east-1:000000000000:MyQueue
+
+echo "Criando tabela Dynamo no LocalStack..."
+aws --endpoint-url=http://localhost:4566 dynamodb create-table --table-name Users --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --billing-mode PAY_PER_REQUEST
+echo "Tabela criada!"

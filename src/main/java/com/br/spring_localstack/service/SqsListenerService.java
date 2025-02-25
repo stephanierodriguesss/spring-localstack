@@ -1,17 +1,18 @@
 package com.br.spring_localstack.service;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
+import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
-import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
 
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class SqsListenerService {
+
+    private final SqsAsyncClient sqsAsyncClient;
 
     @Value("${cloud.aws.services.sqs.queue-url}")
     private String queueUrl;
@@ -19,47 +20,42 @@ public class SqsListenerService {
     @Value("${cloud.aws.services.sqs.queue}")
     private String queue;
 
-    private final SqsClient sqsClient;
-
-    public SqsListenerService(SqsClient sqsClient) {
-        this.sqsClient = sqsClient;
+    public SqsListenerService(SqsAsyncClient sqsAsyncClient) {
+        this.sqsAsyncClient = sqsAsyncClient;
     }
 
+    @PostConstruct
     public void startListening() {
-        while (true) {
-            try {
-                ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
-                        .queueUrl(queueUrl + queue)
-                        .maxNumberOfMessages(10)
-                        .waitTimeSeconds(20)
-                        .build();
-
-                ReceiveMessageResponse response = sqsClient.receiveMessage(receiveMessageRequest);
-                List<Message> messages = response.messages();
-
-                if (!messages.isEmpty()) {
-                    for (Message message : messages) {
-                        processMessage(message);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        listen();
     }
 
-    private void processMessage(Message message) {
-        System.out.println("Mensagem recebida: " + message.body());
-        deleteMessage(message);
-    }
-
-    private void deleteMessage(Message message) {
-        DeleteMessageRequest deleteMessageRequest = DeleteMessageRequest.builder()
+    private void listen() {
+        ReceiveMessageRequest request = ReceiveMessageRequest.builder()
                 .queueUrl(queueUrl + queue)
-                .receiptHandle(message.receiptHandle())
+                .maxNumberOfMessages(5)
+                .waitTimeSeconds(10)
                 .build();
 
-        sqsClient.deleteMessage(deleteMessageRequest);
-        System.out.println("Mensagem deletada da fila.");
+        CompletableFuture.runAsync(() -> {
+            while (true) {
+                sqsAsyncClient.receiveMessage(request)
+                        .thenApply(response -> {
+                            for (Message message : response.messages()) {
+                                System.out.println("Received message: " + message.body());
+                            }
+                            return response;
+                        })
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            return null;
+                        });
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
     }
 }
